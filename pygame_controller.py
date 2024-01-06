@@ -35,6 +35,14 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_BACKSPACE:
+                client.reset()
+
+                client.simSetVehiclePose(airsim.Pose(airsim.Vector3r(0, 0, -10)), False)
+                
+                client.enableApiControl(True)
+                client.armDisarm(True)
 
     scan_wrapper = pygame.key.get_pressed()
 
@@ -68,9 +76,10 @@ while True:
 
     state = client.getMultirotorState()
     s = pprint.pformat(state)
-    print(f'state: {s}')
+    # print(f'state: {s}')
 
 
     if scan_wrapper[pygame.K_ESCAPE]:
         pygame.quit()
         sys.exit()
+        
