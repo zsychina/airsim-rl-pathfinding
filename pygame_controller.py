@@ -2,6 +2,7 @@ import airsim
 import pygame
 import time
 import sys
+import pprint
 
 pygame.init()
 display = pygame.display.set_mode((300, 300))
@@ -64,6 +65,11 @@ while True:
     # 设置速度控制以及设置偏航控制
     client.moveByVelocityBodyFrameAsync(vx=velocity_x, vy=velocity_y, vz=velocity_z, duration=0.02,
                                                 yaw_mode=airsim.YawMode(True, yaw_or_rate=yaw_rate))
+
+    state = client.getMultirotorState()
+    s = pprint.pformat(state)
+    print(f'state: {s}')
+
 
     if scan_wrapper[pygame.K_ESCAPE]:
         pygame.quit()
