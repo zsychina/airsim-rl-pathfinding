@@ -39,7 +39,9 @@ while True:
             if event.key == pygame.K_BACKSPACE:
                 client.reset()
 
-                client.simSetVehiclePose(airsim.Pose(airsim.Vector3r(0, 0, -10)), False)
+                # client.simSetVehiclePose(airsim.Pose(airsim.Vector3r(0, 0, -10)), False)
+                # client.simSetVehiclePose(airsim.Pose(airsim.Vector3r(-68, 0, -5)), False) # start point
+                client.simSetVehiclePose(airsim.Pose(airsim.Vector3r(100, 0, -5)), False) # end point
                 
                 client.enableApiControl(True)
                 client.armDisarm(True)
