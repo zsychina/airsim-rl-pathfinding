@@ -88,3 +88,19 @@ state: <MultirotorState>
 }
 
 ```
+
+## distance sensor format
+
+```txt
+distance sensor: <DistanceSensorData> {   'distance': 23.301977157592773,
+    'max_distance': 40.0,
+    'min_distance': 0.20000000298023224,
+    'relative_pose': <Pose> {   'orientation': <Quaternionr> {   'w_val': 1.0,
+    'x_val': 0.0,
+    'y_val': 0.0,
+    'z_val': 0.0},
+    'position': <Vector3r> {   'x_val': 0.0,
+    'y_val': 0.0,
+    'z_val': -0.10000000149011612}},
+    'time_stamp': 1704967869749285376}
+```

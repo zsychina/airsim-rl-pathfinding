@@ -12,7 +12,7 @@ client.confirmConnection()
 client.enableApiControl(True)
 client.armDisarm(True)
 
-client.takeoffAsync().join()
+# client.takeoffAsync().join()
 
 # 基础的控制速度(m/s)
 vehicle_velocity = 2.0
@@ -78,7 +78,11 @@ while True:
 
     state = client.getMultirotorState()
     s = pprint.pformat(state)
-    # print(f'state: {s}')
+    print(f'state: {s}')
+    
+    distance_sensor_data = client.getDistanceSensorData('', '')
+    distance_sensor_data = pprint.pformat(distance_sensor_data)
+    print(f'distance sensor: {distance_sensor_data}')
 
 
     if scan_wrapper[pygame.K_ESCAPE]:
