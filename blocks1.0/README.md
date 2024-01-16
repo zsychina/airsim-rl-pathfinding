@@ -10,4 +10,4 @@ state_n := 10
 
 action_n := 6
 
-[+X, -X, +Y, -Y, +Z, -Z]
+int, map to [+X, -X, +Y, -Y, +Z, -Z]

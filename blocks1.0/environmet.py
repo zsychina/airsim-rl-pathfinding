@@ -1,6 +1,7 @@
 import airsim
 import numpy as np
 
+d_v = d_vx = d_vy = d_vz = 5.0
 class Env:
     def __init__(self):
         self.client = airsim.MultirotorClient()
@@ -12,6 +13,7 @@ class Env:
         self.client.reset()
         self.step_count = 0
         # should be random
+        self.target_loc = airsim.Vector3r(100, 0, -5)
         self.client.simSetVehiclePose(airsim.Pose(airsim.Vector3r(0, 0, -10)), False)
         self.client.enableApiControl(True)
         self.client.armDisarm(True)
@@ -38,8 +40,16 @@ class Env:
     
     def step(self, action):
         self.step_count += 1
-        # action := tensor([X, Y, Z])
-        self.client.moveByVelocityBodyFrameAsync(vx=action[0], vy=action[1], vz=action[2], 
+        # action := int \in [0, 5]
+        # [+X, -X, +Y, -Y, +Z, -Z]
+        velocity = [0, 0, 0]
+        
+        if action in [0, 2, 4]: # add velocity
+            velocity[action] = d_v
+        else: # minus velocity
+            velocity[action] = -d_v
+        
+        self.client.moveByVelocityBodyFrameAsync(vx=velocity[0], vy=velocity[1], vz=velocity[2], 
                                                  duration=0.02, yaw_mode=airsim.YawMode(True))
         observation = self._cal_observation()
         reward = self._cal_reward(observation)
