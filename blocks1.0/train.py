@@ -6,7 +6,7 @@ import random
 import math
 from helper import ReplayMemory, Transition
 from itertools import count
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 import torch
 import torch.nn as nn
@@ -21,6 +21,7 @@ logger = logging.getLogger('blocks')
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 logger.info(f'Using {device}')
 
+client = airsim.MultirotorClient()
 env = Env()
 
 BATCH_SIZE = 128
@@ -56,25 +57,25 @@ def select_action(state):
         return torch.randint(low=0, high=6, size=(1,1), device=device)
         
         
-episode_durations = []
-def plot_durations(show_result=False):
-    plt.figure(1)
-    durations_t = torch.tensor(episode_durations, dtype=torch.float)
-    if show_result:
-        plt.title('Result')
-    else:
-        plt.clf()
-        plt.title('Training...')
-    plt.xlabel('Episode')
-    plt.ylabel('Duration')
-    plt.plot(durations_t.numpy())
-    # Take 100 episode averages and plot them too
-    if len(durations_t) >= 100:
-        means = durations_t.unfold(0, 100, 1).mean(1).view(-1)
-        means = torch.cat((torch.zeros(99), means))
-        plt.plot(means.numpy())
+# episode_durations = []
+# def plot_durations(show_result=False):
+#     plt.figure(1)
+#     durations_t = torch.tensor(episode_durations, dtype=torch.float)
+#     if show_result:
+#         plt.title('Result')
+#     else:
+#         plt.clf()
+#         plt.title('Training...')
+#     plt.xlabel('Episode')
+#     plt.ylabel('Duration')
+#     plt.plot(durations_t.numpy())
+#     # Take 100 episode averages and plot them too
+#     if len(durations_t) >= 100:
+#         means = durations_t.unfold(0, 100, 1).mean(1).view(-1)
+#         means = torch.cat((torch.zeros(99), means))
+#         plt.plot(means.numpy())
 
-    plt.pause(0.001)  # pause a bit so that plots are updated
+#     plt.pause(0.001)  # pause a bit so that plots are updated
 
         
 def optimize_model():
@@ -125,9 +126,17 @@ def optimize_model():
 
     
 for i_episode in range(10000):
+    logger.warning(f'episode {i_episode}')
     state = env.reset()
     state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
     for t in count():
+        
+        # debugging
+        drone_state = client.getMultirotorState()
+        logger.warn(f'episode {i_episode} step {t}')
+        if drone_state.collision.has_collided:
+            logger.warn(drone_state)
+        
         action = select_action(state)
 
         observation, reward, terminated = env.step(action.item())
@@ -157,11 +166,11 @@ for i_episode in range(10000):
         target_net.load_state_dict(target_net_state_dict)
 
         if done:
-            episode_durations.append(t + 1)
-            plot_durations()
+            # episode_durations.append(t + 1)
+            # plot_durations()
             break
 
 print('Complete')
-plot_durations(show_result=True)
-plt.ioff()
-plt.show()
+# plot_durations(show_result=True)
+# plt.ioff()
+# plt.show()

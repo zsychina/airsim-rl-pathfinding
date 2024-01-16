@@ -34,7 +34,7 @@ class Env:
         distance_sensor_right = self.client.getDistanceSensorData(distance_sensor_name='Right')
         distance_sensors = np.array([distance_sensor_front.distance, distance_sensor_left.distance, distance_sensor_right.distance])
         
-        observation = np.concatenate((distance_vec, cur_loc, distance_sensors, distance))
+        observation = np.concatenate((distance_vec, cur_loc, distance_sensors, np.array([distance])))
         return observation
         
     
@@ -45,9 +45,9 @@ class Env:
         velocity = [0, 0, 0]
         
         if action in [0, 2, 4]: # add velocity
-            velocity[action] = d_v
+            velocity[action // 2] = d_v
         else: # minus velocity
-            velocity[action] = -d_v
+            velocity[action // 2] = -d_v
         
         self.client.moveByVelocityBodyFrameAsync(vx=velocity[0], vy=velocity[1], vz=velocity[2], 
                                                  duration=0.02, yaw_mode=airsim.YawMode(True))
@@ -68,15 +68,16 @@ class Env:
         cur_loc = observation[3: 6]
         target = np.array([self.target_loc.x_val, self.target_loc.y_val, self.target_loc.z_val])
         distance = np.linalg.norm(target - cur_loc)
-        reward += 100/ distance
+        reward += 10000/distance
         
         distance_sensors = observation[6: 9]
-        reward += -1/ distance_sensors.min()
+        reward += -1/distance_sensors.min()
         
         state = self.client.getMultirotorState()
-        is_crash = state.collision.has_collided
-        if is_crash:
-            reward += -1000
+        is_crashed = state.collision.has_collided
+        is_landed = state.landed_state
+        if is_crashed:
+            reward += -100000000
             
         return reward
         
@@ -89,7 +90,7 @@ class Env:
         cur_loc = observation[3: 6]
         target = np.array([self.target_loc.x_val, self.target_loc.y_val, self.target_loc.z_val])
         distance = np.linalg.norm(target - cur_loc)
-        if distance < 5 or reward < -1000:
+        if distance < 5 or reward < -1000 or self.step_count > 2000:
             return True
         
         return False        
