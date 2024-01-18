@@ -46,10 +46,12 @@ target_net.load_state_dict(policy_net.state_dict())
 optimizer = optim.AdamW(policy_net.parameters(), lr=LR, amsgrad=True)
 memory = ReplayMemory(10000)
 
+steps_done = 0
 def select_action(state):
+    global steps_done
     sample = random.random()
     eps_threshold = EPS_END + (EPS_START - EPS_END) * \
-        math.exp(-1. * env.step_count / EPS_DECAY)
+        math.exp(-1. * steps_done / EPS_DECAY)
     if sample > eps_threshold:
         with torch.no_grad():
             return policy_net(state).max(1).indices.view(1, 1)
