@@ -2,6 +2,11 @@
 
 project is still undergoing
 
+## current bugs
+
+- poor training performance
+- reward seems in a steady decline
+
 ## state format
 
 example

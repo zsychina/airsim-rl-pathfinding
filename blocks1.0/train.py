@@ -33,9 +33,9 @@ TAU = 0.005
 LR = 1e-4
 
 # temp state_n := 10
-# temp action_n := 6
+# temp action_n := 4
 state_n = 10
-action_n = 6
+action_n = 4
 
 state = env.reset()
 
@@ -56,7 +56,7 @@ def select_action(state):
         with torch.no_grad():
             return policy_net(state).max(1).indices.view(1, 1)
     else:
-        return torch.randint(low=0, high=6, size=(1,1), device=device)
+        return torch.randint(low=0, high=4, size=(1,1), device=device)
         
         
 # episode_durations = []
@@ -127,18 +127,11 @@ def optimize_model():
     optimizer.step()
 
     
-for i_episode in range(10000):
+for i_episode in range(1000):
     logger.warning(f'episode {i_episode}')
     state = env.reset()
     state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
-    for t in count():
-        
-        # debugging
-        drone_state = client.getMultirotorState()
-        logger.warn(f'episode {i_episode} step {t}')
-        if drone_state.collision.has_collided:
-            logger.warn(drone_state)
-        
+    for t in count():        
         action = select_action(state)
 
         observation, reward, terminated = env.step(action.item())
@@ -167,9 +160,18 @@ for i_episode in range(10000):
             target_net_state_dict[key] = policy_net_state_dict[key]*TAU + target_net_state_dict[key]*(1-TAU)
         target_net.load_state_dict(target_net_state_dict)
 
+        # debugging
+        drone_state = client.getMultirotorState()
+        logger.warn(f'episode {i_episode} step {t}')
+        logger.warn(f'reward {reward.item()}')
+        if drone_state.collision.has_collided:
+            logger.warn(drone_state)
+
         if done:
             # episode_durations.append(t + 1)
             # plot_durations()
+            torch.save(policy_net.state_dict(), 'policy_net.pth')
+            
             break
 
 print('Complete')

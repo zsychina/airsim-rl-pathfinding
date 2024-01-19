@@ -40,16 +40,19 @@ class Env:
     
     def step(self, action):
         self.step_count += 1
-        # action := int \in [0, 5]
-        # [+X, -X, +Y, -Y, +Z, -Z]
-        velocity = [0, 0, 0]
+        # action := int \in [0, 3]
+        # [+X, -X, +Y, -Y]
+        velocity = [0, 0]
         
-        if action in [0, 2, 4]: # add velocity
-            velocity[action // 2] = d_v
-        else: # minus velocity
-            velocity[action // 2] = -d_v
+        try:
+            if action in [0, 2]: # add velocity
+                velocity[action // 2] = d_v
+            else: # minus velocity
+                velocity[action // 2] = -d_v
+        except:
+            print(action)
         
-        self.client.moveByVelocityBodyFrameAsync(vx=velocity[0], vy=velocity[1], vz=velocity[2], 
+        self.client.moveByVelocityBodyFrameAsync(vx=velocity[0], vy=velocity[1], vz=0, 
                                                  duration=0.02, yaw_mode=airsim.YawMode(True))
         observation = self._cal_observation()
         reward = self._cal_reward(observation)
@@ -71,7 +74,7 @@ class Env:
         reward += 10000/distance
         
         distance_sensors = observation[6: 9]
-        reward += -1/distance_sensors.min()
+        # reward += -1/distance_sensors.min()
         
         state = self.client.getMultirotorState()
         is_crashed = state.collision.has_collided
@@ -90,7 +93,7 @@ class Env:
         cur_loc = observation[3: 6]
         target = np.array([self.target_loc.x_val, self.target_loc.y_val, self.target_loc.z_val])
         distance = np.linalg.norm(target - cur_loc)
-        if distance < 5 or reward < -1000 or self.step_count > 2000:
+        if distance < 5 or reward < -1000 or self.step_count > 2000 or np.absolute(observation[5]) < 2:
             return True
         
         return False        
