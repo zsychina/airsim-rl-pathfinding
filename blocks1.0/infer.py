@@ -19,8 +19,8 @@ state_n = 10
 action_n = 4
 
 policy_net = FC(state_n, action_n).to(device)
-# policy_net.load_state_dict(torch.load('policy_net.pth'))
-policy_net = torch.load('policy_net.pth')
+policy_net.load_state_dict(torch.load('policy_net.pth'))
+# policy_net = torch.load('policy_net.pth')
 
 def select_action(state):
     with torch.no_grad():
