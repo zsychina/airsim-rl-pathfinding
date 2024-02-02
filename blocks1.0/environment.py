@@ -73,6 +73,18 @@ class Env:
             quad_vel = self.client.getMultirotorState().kinematics_estimated.linear_velocity
             
             collided = self.client.simGetCollisionInfo().has_collided
+            
+            # alternative solution for simGetCollisionInfo().has_collided api always return false
+            close_to_wall = False
+            distance_sensor_front = self.client.getDistanceSensorData(distance_sensor_name='Front')
+            distance_sensor_left = self.client.getDistanceSensorData(distance_sensor_name='Left')
+            distance_sensor_right = self.client.getDistanceSensorData(distance_sensor_name='Right')            
+            distance_sensor_back = self.client.getDistanceSensorData(distance_sensor_name='Back')    
+            distance_sensors = np.array([distance_sensor_front.distance, distance_sensor_left.distance, distance_sensor_right.distance, distance_sensor_back.distance])
+            if distance_sensors.min() < 0.1:
+                close_to_wall = True
+            collided = collided or close_to_wall
+            
             landed = (quad_vel.x_val == 0 and quad_vel.y_val == 0 and quad_vel.z_val == 0)
             landed = landed or quad_pos.z_val > floorZ 
             collision = collided or landed
@@ -128,7 +140,7 @@ class Env:
         cur_loc = observation[3: 6]
         target = np.array([self.target_loc.x_val, self.target_loc.y_val, self.target_loc.z_val])
         distance = np.linalg.norm(target - cur_loc)
-        if distance < 5 or reward < -10 or self.step_count > 200 or np.absolute(observation[5]) < 2:
+        if distance < 5 or reward < -10 or self.step_count > 1000 or np.absolute(observation[5]) < 2:
             return True
         
         return False        
