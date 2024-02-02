@@ -1,6 +1,6 @@
 import logging
 import airsim
-from environmet import Env
+from ..environmet import Env
 import sys
 import random
 import math
@@ -12,7 +12,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-sys.path.append('..')
+sys.path.append('../..')
 from models.fc import FC
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')

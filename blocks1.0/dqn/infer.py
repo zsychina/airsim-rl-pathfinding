@@ -2,9 +2,9 @@ import airsim
 import torch
 import logging
 import sys
-sys.path.append('..')
+sys.path.append('../..')
 from models.fc import FC
-from environmet import Env
+from ..environmet import Env
 from itertools import count
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
