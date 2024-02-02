@@ -78,8 +78,10 @@ class Env:
             collision = collided or landed
             if collision:
                 collision_count += 1
+                print(f'collision_count {collision_count}')
             if collision_count > 10:
                 has_collided = True
+                print('collided!')
                 break
          
         self.client.simPause(True)
@@ -126,16 +128,8 @@ class Env:
         cur_loc = observation[3: 6]
         target = np.array([self.target_loc.x_val, self.target_loc.y_val, self.target_loc.z_val])
         distance = np.linalg.norm(target - cur_loc)
-        if distance < 5 or reward < -10 or self.step_count > 2000 or np.absolute(observation[5]) < 2:
+        if distance < 5 or reward < -10 or self.step_count > 200 or np.absolute(observation[5]) < 2:
             return True
         
         return False        
-        
-        
-    
-if __name__ == '__main__':
-    env = Env()
-    print(env.target_loc)
-    print(env.target_loc.x_val)
-    
-    
+

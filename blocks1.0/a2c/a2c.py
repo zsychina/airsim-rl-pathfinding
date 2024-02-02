@@ -1,5 +1,6 @@
 from agent import A2C
 import torch.optim as optim
+import torch
 import math
 import sys
 sys.path.append('..')
@@ -11,6 +12,9 @@ MAX_EPISODE = 10000
 env = Env()
 agent = A2C(env=env)
 
+agent.actor.load_state_dict(torch.load('checkpoint/actor.pth'))
+agent.critic.load_state_dict(torch.load('checkpoint/critic.pth'))
+
 actor_optim = optim.Adam(agent.actor.parameters(), lr=LR)
 critic_optim = optim.Adam(agent.critic.parameters(), lr=LR)
 
@@ -19,6 +23,7 @@ avg_r = []
 max_r = -math.inf
 
 for i in range(MAX_EPISODE):
+    print(f'episode {i}')
     actor_optim.zero_grad()
     critic_optim.zero_grad()
     
@@ -26,13 +31,9 @@ for i in range(MAX_EPISODE):
     
     r.append(rewards)
     
-    if len(r) >= 100:
-        episode_count = i - (i % 100)
-        prev_episodes = r[len(r) - 100:]
-        avg_r = sum(prev_episodes) / len(prev_episodes)
-        if len(r) % 100 == 0:
-            print(f'Average reward during episodes {episode_count}-{episode_count + 100} is {avg_r.item()}')
-            
+    avg_reward = total_reward / len(rewards)
+    print(f'Average reward for episode {i} is {avg_reward}')
+    
     l_actor, l_critic = agent.compute_loss(action_p_vals=action_lp_vals, G=rewards, V=critic_vals)
     
     l_actor.backward()
@@ -40,4 +41,8 @@ for i in range(MAX_EPISODE):
     
     actor_optim.step()
     critic_optim.step()
+    
+    torch.save(agent.actor.state_dict(), 'checkpoint/actor.pth')
+    torch.save(agent.critic.state_dict(), 'checkpoint/critic.pth')
+    
     
