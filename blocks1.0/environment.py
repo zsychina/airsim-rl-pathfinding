@@ -94,7 +94,7 @@ class Env:
     
     def _cal_reward(self, observation, dead):
         quad_vel = self.client.getMultirotorState().kinematics_estimated.linear_velocity
-        vel = np.array([quad_vel.x_val, quad_vel.y_val, quad_vel.z_val], dtype=np.float)
+        vel = np.array([quad_vel.x_val, quad_vel.y_val, quad_vel.z_val], dtype=np.float64)
         speed = np.linalg.norm(vel)
         
         cur_loc = observation[3: 5]

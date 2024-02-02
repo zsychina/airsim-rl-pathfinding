@@ -1,7 +1,9 @@
 from agent import A2C
 import torch.optim as optim
 import math
-from ..environmet import Env
+import sys
+sys.path.append('..')
+from environment import Env
 
 LR = 1e-3
 MAX_EPISODE = 10000
