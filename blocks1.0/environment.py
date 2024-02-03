@@ -114,10 +114,17 @@ class Env:
         cur_loc = observation[3: 5]
         target = np.array([self.target_loc.x_val, self.target_loc.y_val])
         current_distance = np.linalg.norm(target - cur_loc)
-        distance_sensors = observation[6: 9]
+        
+        distance_sensor_front = self.client.getDistanceSensorData(distance_sensor_name='Front')
+        distance_sensor_left = self.client.getDistanceSensorData(distance_sensor_name='Left')
+        distance_sensor_right = self.client.getDistanceSensorData(distance_sensor_name='Right')            
+        distance_sensor_back = self.client.getDistanceSensorData(distance_sensor_name='Back')    
+        distance_sensors = np.array([distance_sensor_front.distance, distance_sensor_left.distance, distance_sensor_right.distance, distance_sensor_back.distance])       
         
         
         reward = 0
+        reward += config.reward['close'] / (distance_sensors.min() + 1e-6)
+        
         if dead:
             reward += config.reward['dead']
         

@@ -5,4 +5,5 @@ reward = {
     'slow': -0.05,
     'dead': -20.0,
     'goal': 10.0,
+    'close': -0.5,
 }

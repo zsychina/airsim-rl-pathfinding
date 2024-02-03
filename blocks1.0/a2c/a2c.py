@@ -12,8 +12,8 @@ MAX_EPISODE = 10000
 env = Env()
 agent = A2C(env=env)
 
-agent.actor.load_state_dict(torch.load('checkpoint/actor.pth'))
-agent.critic.load_state_dict(torch.load('checkpoint/critic.pth'))
+# agent.actor.load_state_dict(torch.load('checkpoint/actor.pth'))
+# agent.critic.load_state_dict(torch.load('checkpoint/critic.pth'))
 
 actor_optim = optim.Adam(agent.actor.parameters(), lr=LR)
 critic_optim = optim.Adam(agent.critic.parameters(), lr=LR)
