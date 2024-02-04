@@ -9,25 +9,29 @@ floorZ = 2
 speed_limit = 0.2
 
 d_v = d_vx = d_vy = d_vz = 2.0
+
+target_pos = [30, -35, -6]
+init_pos = [-65, 0, -10]
+
 class Env:
     def __init__(self):
         self.client = airsim.MultirotorClient()
         # should be random
-        self.target_loc = airsim.Vector3r(100, 0, -8)
+        self.target_loc = airsim.Vector3r(target_pos[0], target_pos[1], target_pos[2])
         self.step_count = 0
     
     def reset(self):
         self.client.reset()
         self.step_count = 0
         # should be random
-        self.target_loc = airsim.Vector3r(100, 0, -8)
-        self.client.simSetVehiclePose(airsim.Pose(airsim.Vector3r(0, 0, -10)), False)
+        self.target_loc = airsim.Vector3r(target_pos[0], target_pos[1], target_pos[2])
+        self.client.simSetVehiclePose(airsim.Pose(airsim.Vector3r(init_pos[0], init_pos[1], init_pos[2])), False)
         self.client.enableApiControl(True)
         self.client.armDisarm(True)
         
-        self.last_distance = np.linalg.norm([self.target_loc.x_val, self.target_loc.y_val])
+        self.last_distance = np.linalg.norm([self.target_loc.x_val - init_pos[0], self.target_loc.y_val - init_pos[1]])
         
-        return self._cal_observation()       
+        return self._cal_observation()
         
         
     def _cal_observation(self):
@@ -123,7 +127,7 @@ class Env:
         
         
         reward = 0
-        reward += config.reward['close'] / (distance_sensors.min() + 1e-6)
+        # reward += config.reward['close'] / (distance_sensors.min() + 1e-6)
         
         if dead:
             reward += config.reward['dead']
@@ -147,7 +151,7 @@ class Env:
         cur_loc = observation[3: 6]
         target = np.array([self.target_loc.x_val, self.target_loc.y_val, self.target_loc.z_val])
         distance = np.linalg.norm(target - cur_loc)
-        if distance < 5 or reward < -10 or self.step_count > 1000 or np.absolute(observation[5]) < 2:
+        if distance < 5 or reward < -10 or self.step_count > 1500 or np.absolute(observation[5]) < 2:
             return True
         
         return False        
