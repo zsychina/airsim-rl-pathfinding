@@ -1,5 +1,5 @@
 reward = {
-    'forward': 0.1,
+    'forward': 1,
     'backward': -0.01,
     'normal': -0.1,
     'slow': -0.05,
