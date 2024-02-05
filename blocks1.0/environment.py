@@ -140,7 +140,7 @@ class Env:
         if speed < speed_limit:
             reward += config.reward['slow']
         
-        if current_distance < 5:
+        if current_distance <= 5:
             reward += config.reward['goal']
             
         self.last_distance = current_distance
@@ -151,7 +151,7 @@ class Env:
         cur_loc = observation[3: 6]
         target = np.array([self.target_loc.x_val, self.target_loc.y_val, self.target_loc.z_val])
         distance = np.linalg.norm(target - cur_loc)
-        if distance < 5 or reward < -10 or self.step_count > 1500 or np.absolute(observation[5]) < 2:
+        if distance < 3 or reward < -5 or self.step_count > 1500 or np.absolute(observation[5]) < 2:
             return True
         
         return False        
