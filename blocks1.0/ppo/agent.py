@@ -3,7 +3,7 @@ import torch.nn as nn
 from torch.distributions import Categorical
 
 
-device = 'gpu' if torch.cuda.is_available() else 'cpu'
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 class RolloutBuffer:
     def __init__(self):

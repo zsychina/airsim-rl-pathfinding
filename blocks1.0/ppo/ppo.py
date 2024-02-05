@@ -26,7 +26,8 @@ ppo_agent = PPO(
     lr_actor=lr_actor,
     lr_critic=lr_cirtic,
     K_epochs=K_epochs,
-    eps_clip=eps_clip
+    eps_clip=eps_clip,
+    gamma=gamma
 )
 
 
