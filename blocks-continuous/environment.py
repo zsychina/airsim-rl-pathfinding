@@ -127,7 +127,7 @@ class Env:
         if current_distance < self.last_distance:
             reward += config.reward['forward'] * (self.last_distance - current_distance)
         else:
-            reward += config.reward['backward']
+            reward += config.reward['backward'] * (current_distance - self.last_distance)
         
         if speed < speed_limit:
             reward += config.reward['slow']
