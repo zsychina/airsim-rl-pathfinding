@@ -4,7 +4,7 @@ import torch
 import math
 import sys
 sys.path.append('..')
-from environment import Env
+from blocks3d.environment import Env
 
 LR = 1e-3
 MAX_EPISODE = 10000
