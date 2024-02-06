@@ -5,6 +5,7 @@ project is still undergoing
 ## TODOS
 
 - 2d -> 3d
+- add yaw control dim
 - improve model structure
 - continuous ppo
 
