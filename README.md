@@ -2,10 +2,11 @@
 
 project is still undergoing
 
-## current bugs
+## TODOS
 
-- poor training performance
-- reward seems in a steady decline
+- 2d -> 3d
+- improve model structure
+- continuous ppo
 
 ## state format
 
