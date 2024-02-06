@@ -70,7 +70,7 @@ class ActorCritic(nn.Module):
         
         return action.detach(), action_logprob.detach(), state_val.detach()
     
-    def evaluate(self, state, actor):
+    def evaluate(self, state, action):
         action_mean = self.actor(state)
         action_var = self.action_var.expand_as(action_mean)
         cov_mat = torch.diag_embed(action_var).to(device)
