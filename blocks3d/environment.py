@@ -29,7 +29,7 @@ class Env:
         self.client.enableApiControl(True)
         self.client.armDisarm(True)
         
-        self.last_distance = np.linalg.norm([self.target_loc.x_val - init_pos[0], self.target_loc.y_val - init_pos[1]])
+        self.last_distance = np.linalg.norm([self.target_loc.x_val - init_pos[0], self.target_loc.y_val - init_pos[1], self.target_loc.z_val - init_pos[2]])
         
         return self._cal_observation()
         
@@ -53,20 +53,17 @@ class Env:
     
     def step(self, action):
         self.step_count += 1
-        # action := int \in [0, 3]
-        # [+X, -X, +Y, -Y]
-        velocity = [0, 0]
+        # action := int \in [0, 5]
+        # [+X, -X, +Y, -Y, +Z, -Z]
+        velocity = [0, 0, 0]
         
-        try:
-            if action in [0, 2]: # add velocity
-                velocity[action // 2] = d_v
-            else: # minus velocity
-                velocity[action // 2] = -d_v
-        except:
-            print(action)
+        if action in [0, 2, 4]: # add velocity
+            velocity[action // 2] = d_v
+        else: # minus velocity
+            velocity[action // 2] = -d_v
         
         self.client.simPause(False)
-        self.client.moveByVelocityBodyFrameAsync(vx=velocity[0], vy=velocity[1], vz=0, 
+        self.client.moveByVelocityBodyFrameAsync(vx=velocity[0], vy=velocity[1], vz=velocity[2], 
                                                  duration=timeslice, yaw_mode=airsim.YawMode(True))
         landed = False
         has_collided = False
@@ -115,8 +112,8 @@ class Env:
         vel = np.array([quad_vel.x_val, quad_vel.y_val, quad_vel.z_val], dtype=np.float64)
         speed = np.linalg.norm(vel)
         
-        cur_loc = observation[3: 5]
-        target = np.array([self.target_loc.x_val, self.target_loc.y_val])
+        cur_loc = observation[3: 6]
+        target = np.array([self.target_loc.x_val, self.target_loc.y_val, self.target_loc.z_val])
         current_distance = np.linalg.norm(target - cur_loc)
         
         distance_sensor_front = self.client.getDistanceSensorData(distance_sensor_name='Front')
@@ -151,7 +148,7 @@ class Env:
         cur_loc = observation[3: 6]
         target = np.array([self.target_loc.x_val, self.target_loc.y_val, self.target_loc.z_val])
         distance = np.linalg.norm(target - cur_loc)
-        if distance < 3 or reward < -5 or self.step_count > 1500 or np.absolute(observation[5]) < 2:
+        if distance < 3 or reward < -5 or self.step_count > 2000 or np.absolute(observation[5]) < 2:
             return True
         
         return False        
