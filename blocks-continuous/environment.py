@@ -11,9 +11,6 @@ speed_limit = 0.2
 d_v = d_vx = d_vy = d_vz = 10.0
 yaw_dv = 5.0
 
-target_pos = [30, -35, -6]
-init_pos = [-65, 0, -10]
-
 class Env:
     def __init__(self):
         self.client = airsim.MultirotorClient()
@@ -21,7 +18,9 @@ class Env:
     def reset(self):
         self.client.reset()
         self.step_count = 0
-        # should be random
+        target_pos = [np.random.uniform(70, 90), np.random.uniform(-120, 120), -10]
+        init_pos = [np.random.uniform(-120, -100), np.random.uniform(-120, 120), -10]
+        
         self.target_loc = airsim.Vector3r(target_pos[0], target_pos[1], target_pos[2])
         self.client.simSetVehiclePose(airsim.Pose(airsim.Vector3r(init_pos[0], init_pos[1], init_pos[2])), False)
         self.client.enableApiControl(True)
@@ -143,7 +142,7 @@ class Env:
         cur_loc = observation[3: 6]
         target = np.array([self.target_loc.x_val, self.target_loc.y_val, self.target_loc.z_val])
         distance = np.linalg.norm(target - cur_loc)
-        if distance < 3 or reward < -5 or self.step_count > 2000 or np.absolute(observation[5]) < 2:
+        if distance < 3 or reward < -5 or self.step_count > 20000 or np.absolute(observation[5]) < 2:
             return True
         
         return False        
