@@ -18,9 +18,9 @@ class Env:
     def reset(self):
         self.client.reset()
         self.step_count = 0
-        target_pos = [np.random.uniform(70, 90), np.random.uniform(-120, 120), -10]
-        init_pos = [np.random.uniform(-120, -100), np.random.uniform(-120, 120), -10]
-        
+        target_pos = [np.random.uniform(70, 80), np.random.uniform(50, 70), -10]
+        init_pos = [np.random.uniform(-95, -90), np.random.uniform(-20, 20), -10]
+        # print(f'target_pos {target_pos}\ninit_pos{init_pos}')
         self.target_loc = airsim.Vector3r(target_pos[0], target_pos[1], target_pos[2])
         self.client.simSetVehiclePose(airsim.Pose(airsim.Vector3r(init_pos[0], init_pos[1], init_pos[2])), False)
         self.client.enableApiControl(True)
@@ -142,8 +142,18 @@ class Env:
         cur_loc = observation[3: 6]
         target = np.array([self.target_loc.x_val, self.target_loc.y_val, self.target_loc.z_val])
         distance = np.linalg.norm(target - cur_loc)
-        if distance < 3 or reward < -5 or self.step_count > 20000 or np.absolute(observation[5]) < 2:
+
+        if distance < 3:
+            print('solved')
             return True
-        
+        if reward < -5:
+            print('reward too low') 
+            return True
+        if self.step_count > 20000:
+            print('timeout')   
+            return True
+        if np.absolute(observation[5]) < 2:
+            print('height too low')
+            return True
         return False        
 
