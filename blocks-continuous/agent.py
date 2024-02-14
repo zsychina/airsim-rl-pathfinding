@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 from torch.distributions import Categorical
 from torch.distributions import MultivariateNormal
+from model import Actor, Critic
 
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -31,27 +32,9 @@ class ActorCritic(nn.Module):
         
         self.action_dim = action_dim
         self.action_var = torch.full((action_dim,), action_std_init * action_std_init).to(device)
-        
-        self.actor = nn.Sequential(
-            nn.Linear(state_dim, 128),
-            nn.Tanh(),
-            nn.Linear(128, 128),
-            nn.Tanh(),
-            nn.Linear(128, 128),
-            nn.Tanh(),
-            nn.Linear(128, action_dim),
-            nn.Tanh()
-        )
-        
-        self.critic = nn.Sequential(
-            nn.Linear(state_dim, 128),
-            nn.Tanh(),
-            nn.Linear(128, 128),
-            nn.Tanh(),
-            nn.Linear(128, 128),
-            nn.Tanh(),
-            nn.Linear(128, 1),
-        )
+    
+        self.actor = Actor(state_dim, action_dim)
+        self.critic = Critic(state_dim, action_dim)
     
     def set_action_std(self, new_action_std):
         self.action_var = torch.full((self.action_dim,), new_action_std * new_action_std).to(device)
