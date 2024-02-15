@@ -12,11 +12,11 @@ class Actor(nn.Module):
         self.linear5 = nn.Linear(64, action_dim)
     
     def forward(self, x):
-        x = nn.Tanh(self.linear1(x))
-        x = nn.Tanh(self.linear2(x))
-        x = nn.Tanh(self.linear3(x))
-        x = nn.Tanh(self.linear4(x))
-        x = nn.Tanh(self.linear5(x))
+        x = torch.tanh(self.linear1(x))
+        x = torch.tanh(self.linear2(x))
+        x = torch.tanh(self.linear3(x))
+        x = torch.tanh(self.linear4(x))
+        x = torch.tanh(self.linear5(x))
         return x
         
         
@@ -30,10 +30,10 @@ class Critic(nn.Module):
         self.linear5 = nn.Linear(64, 1)
     
     def forward(self, x):
-        x = nn.Tanh(self.linear1(x))
-        x = nn.Tanh(self.linear2(x))
-        x = nn.Tanh(self.linear3(x))
-        x = nn.Tanh(self.linear4(x))
+        x = torch.tanh(self.linear1(x))
+        x = torch.tanh(self.linear2(x))
+        x = torch.tanh(self.linear3(x))
+        x = torch.tanh(self.linear4(x))
         x = self.linear5(x)
         return x
         

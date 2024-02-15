@@ -3,7 +3,7 @@ import numpy as np
 import time
 import config
 
-clockspeed = 10
+clockspeed = 20
 timeslice = 1 / clockspeed
 floorZ = 2
 speed_limit = 0.2
