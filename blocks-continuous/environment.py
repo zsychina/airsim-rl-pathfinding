@@ -5,7 +5,6 @@ import config
 
 clockspeed = 20
 timeslice = 1 / clockspeed
-floorZ = 2
 speed_limit = 0.2
 
 d_v = d_vx = d_vy = d_vz = 10.0
@@ -81,14 +80,11 @@ class Env:
             collided = collided or close_to_wall
             
             landed = (quad_vel.x_val == 0 and quad_vel.y_val == 0 and quad_vel.z_val == 0)
-            landed = landed or quad_pos.z_val > floorZ 
+            landed = landed or np.absolute(quad_pos.z_val) < 2 
             collision = collided or landed
             if collision:
-                collision_count += 1
+                has_collided = True                
                 print(f'collision_count {collision_count}')
-            if collision_count > 10:
-                has_collided = True
-                print('collided!')
                 break
          
         self.client.simPause(True)
@@ -152,7 +148,7 @@ class Env:
         if self.step_count > 20000:
             print('timeout')   
             return True
-        if np.absolute(observation[5]) < 2:
+        if np.absolute(observation[5]) < 1:
             print('height too low')
             return True
         return False        
