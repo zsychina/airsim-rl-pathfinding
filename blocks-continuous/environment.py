@@ -3,16 +3,12 @@ import numpy as np
 import time
 import config
 
-clockspeed = 10
+clockspeed = 20
 timeslice = 1 / clockspeed
-floorZ = 2
 speed_limit = 0.2
 
 d_v = d_vx = d_vy = d_vz = 10.0
 yaw_dv = 5.0
-
-target_pos = [30, -35, -6]
-init_pos = [-65, 0, -10]
 
 class Env:
     def __init__(self):
@@ -21,7 +17,9 @@ class Env:
     def reset(self):
         self.client.reset()
         self.step_count = 0
-        # should be random
+        target_pos = [np.random.uniform(70, 80), np.random.uniform(50, 70), -10]
+        init_pos = [np.random.uniform(-95, -90), np.random.uniform(-20, 20), -10]
+        # print(f'target_pos {target_pos}\ninit_pos{init_pos}')
         self.target_loc = airsim.Vector3r(target_pos[0], target_pos[1], target_pos[2])
         self.client.simSetVehiclePose(airsim.Pose(airsim.Vector3r(init_pos[0], init_pos[1], init_pos[2])), False)
         self.client.enableApiControl(True)
@@ -82,14 +80,11 @@ class Env:
             collided = collided or close_to_wall
             
             landed = (quad_vel.x_val == 0 and quad_vel.y_val == 0 and quad_vel.z_val == 0)
-            landed = landed or quad_pos.z_val > floorZ 
+            landed = landed or np.absolute(quad_pos.z_val) < 2 
             collision = collided or landed
             if collision:
-                collision_count += 1
+                has_collided = True                
                 print(f'collision_count {collision_count}')
-            if collision_count > 10:
-                has_collided = True
-                print('collided!')
                 break
          
         self.client.simPause(True)
@@ -143,8 +138,18 @@ class Env:
         cur_loc = observation[3: 6]
         target = np.array([self.target_loc.x_val, self.target_loc.y_val, self.target_loc.z_val])
         distance = np.linalg.norm(target - cur_loc)
-        if distance < 3 or reward < -5 or self.step_count > 2000 or np.absolute(observation[5]) < 2:
+
+        if distance < 3:
+            print('solved')
             return True
-        
+        if reward < -5:
+            print('reward too low') 
+            return True
+        if self.step_count > 20000:
+            print('timeout')   
+            return True
+        if np.absolute(observation[5]) < 1:
+            print('height too low')
+            return True
         return False        
 
