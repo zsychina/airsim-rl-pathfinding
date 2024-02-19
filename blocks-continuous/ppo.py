@@ -2,6 +2,7 @@ from environment import Env
 from agent import PPO
 import torch
 
+torch.manual_seed(42)
 
 MAX_EPISODE = 10000
 UPDATE_TIMESTEP = 2000
@@ -31,7 +32,7 @@ ppo_agent = PPO(
 
 time_step = 0
 running_reward = 0
-running_episode = 0
+running_episode = 1
 for episode_i in range(MAX_EPISODE):
     state = env.reset()
     current_episode_reward = 0
