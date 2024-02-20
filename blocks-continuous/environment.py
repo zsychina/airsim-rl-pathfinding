@@ -102,7 +102,7 @@ class Env:
         vel = np.array([quad_vel.x_val, quad_vel.y_val, quad_vel.z_val], dtype=np.float64)
         speed = np.linalg.norm(vel)
         
-        cur_loc = observation[3: 6]
+        cur_loc = observation[1][:3]
         target = np.array([self.target_loc.x_val, self.target_loc.y_val, self.target_loc.z_val])
         current_distance = np.linalg.norm(target - cur_loc)
         
@@ -135,7 +135,7 @@ class Env:
         
         
     def _is_done(self, observation, reward):
-        cur_loc = observation[3: 6]
+        cur_loc = observation[1][:3]
         target = np.array([self.target_loc.x_val, self.target_loc.y_val, self.target_loc.z_val])
         distance = np.linalg.norm(target - cur_loc)
 
@@ -148,7 +148,7 @@ class Env:
         if self.step_count > 2000:
             print('timeout')   
             return True
-        if np.absolute(observation[5]) < 1:
+        if np.absolute(observation[1][2]) < 1:
             print('height too low')
             return True
         return False        

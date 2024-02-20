@@ -70,7 +70,7 @@ class ActorCritic(nn.Module):
     
     
 class PPO:
-    def __init__(self, state_dim, action_dim, lr_actor, lr_critic, gamma, K_epochs, eps_clip, action_std_init=0.6):
+    def __init__(self, action_dim, lr_actor, lr_critic, gamma, K_epochs, eps_clip, action_std_init=0.6):
         self.action_std = action_std_init
         self.gamma = gamma
         self.eps_clip = eps_clip
@@ -106,7 +106,7 @@ class PPO:
         with torch.no_grad():
             # state = torch.FloatTensor(state).to(device)
             state_tensors = [torch.from_numpy(state[0]).float().to(device), torch.from_numpy(state[1]).float().to(device)]
-            action, action_logprob, state_val = self.policy_old.act(state)
+            action, action_logprob, state_val = self.policy_old.act(state_tensors)
              
         self.buffer.states.append(state_tensors)
         self.buffer.actions.append(action)
