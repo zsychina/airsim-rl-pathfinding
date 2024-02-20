@@ -27,14 +27,14 @@ class RolloutBuffer:
 
 
 class ActorCritic(nn.Module):
-    def __init__(self, state_dim, action_dim, action_std_init):
+    def __init__(self, action_dim, action_std_init):
         super().__init__()
         
         self.action_dim = action_dim
         self.action_var = torch.full((action_dim,), action_std_init * action_std_init).to(device)
     
-        self.actor = Actor(state_dim, action_dim)
-        self.critic = Critic(state_dim, action_dim)
+        self.actor = Actor(action_dim)
+        self.critic = Critic()
     
     def set_action_std(self, new_action_std):
         self.action_var = torch.full((self.action_dim,), new_action_std * new_action_std).to(device)
@@ -78,13 +78,13 @@ class PPO:
         
         self.buffer = RolloutBuffer()
 
-        self.policy = ActorCritic(state_dim, action_dim, action_std_init).to(device)
+        self.policy = ActorCritic(action_dim, action_std_init).to(device)
         self.optimizer = torch.optim.Adam([
                         {'params': self.policy.actor.parameters(), 'lr': lr_actor},
                         {'params': self.policy.critic.parameters(), 'lr': lr_critic}
                     ])
 
-        self.policy_old = ActorCritic(state_dim, action_dim, action_std_init).to(device)
+        self.policy_old = ActorCritic(action_dim, action_std_init).to(device)
         self.policy_old.load_state_dict(self.policy.state_dict())
         
         self.MseLoss = nn.MSELoss()
@@ -104,10 +104,11 @@ class PPO:
         
     def select_action(self, state):
         with torch.no_grad():
-            state = torch.FloatTensor(state).to(device)
+            # state = torch.FloatTensor(state).to(device)
+            state_tensors = [torch.from_numpy(state[0]).float().to(device), torch.from_numpy(state[1]).float().to(device)]
             action, action_logprob, state_val = self.policy_old.act(state)
              
-        self.buffer.states.append(state)
+        self.buffer.states.append(state_tensors)
         self.buffer.actions.append(action)
         self.buffer.logprobs.append(action_logprob)
         self.buffer.state_values.append(state_val)

@@ -15,11 +15,10 @@ eps_clip = 0.2
 gamma = .99
 lr_actor =  3e-4
 lr_cirtic = 1e-3
-state_dim = 10
+# state_dim = 10
 action_dim = 4
 
 ppo_agent = PPO(
-    state_dim=state_dim, 
     action_dim=action_dim, 
     lr_actor=lr_actor,
     lr_critic=lr_cirtic,
@@ -31,7 +30,7 @@ ppo_agent = PPO(
 
 time_step = 0
 running_reward = 0
-running_episode = 0
+running_episode = 1
 for episode_i in range(MAX_EPISODE):
     state = env.reset()
     current_episode_reward = 0
