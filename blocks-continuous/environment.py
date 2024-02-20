@@ -3,7 +3,7 @@ import numpy as np
 import time
 import config
 
-clockspeed = 10
+clockspeed = 20
 timeslice = 1 / clockspeed
 speed_limit = 0.2
 
@@ -143,6 +143,7 @@ class Env:
         if distance < 3:
             print('solved')
             return True
+
         if reward < -30:
             print('reward too low') 
             return True
@@ -151,6 +152,7 @@ class Env:
             return True
         if np.absolute(observation[5]) < 1:
             print('too low')
+
             return True
         return False        
 
