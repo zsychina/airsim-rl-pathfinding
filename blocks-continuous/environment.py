@@ -2,8 +2,9 @@ import airsim
 import numpy as np
 import time
 import config
+import cv2
 
-clockspeed = 20
+clockspeed = 10
 timeslice = 1 / clockspeed
 speed_limit = 0.2
 
@@ -32,19 +33,18 @@ class Env:
         
         
     def _cal_observation(self):
-        # [DX, DY, DZ, X, Y, Z, Front, Left, Right, Distance]
         state = self.client.getMultirotorState()
         cur_loc = state.kinematics_estimated.position
         cur_loc = np.array([cur_loc.x_val, cur_loc.y_val, cur_loc.z_val])
         target = np.array([self.target_loc.x_val, self.target_loc.y_val, self.target_loc.z_val])
-        distance_vec = target - cur_loc
-        distance = np.linalg.norm(distance_vec)
-        distance_sensor_front = self.client.getDistanceSensorData(distance_sensor_name='Front')
-        distance_sensor_left = self.client.getDistanceSensorData(distance_sensor_name='Left')
-        distance_sensor_right = self.client.getDistanceSensorData(distance_sensor_name='Right')
-        distance_sensors = np.array([distance_sensor_front.distance, distance_sensor_left.distance, distance_sensor_right.distance])
-        
-        observation = np.concatenate((distance_vec, cur_loc, distance_sensors, np.array([distance])))
+
+        responses = self.client.simGetImages([airsim.ImageRequest("0", airsim.ImageType.Scene, False, False)])
+        response = responses[0]
+        img1d = np.fromstring(response.image_data_uint8, dtype=np.uint8) 
+        img_rgb = img1d.reshape(response.height, response.width, 3)
+        img_resize = cv2.resize(img_rgb, (64, 64))
+        img_resize = np.transpose(img_resize, (2, 0, 1))
+        observation = [img_resize, np.concatenate([cur_loc, target])]
         return observation
         
     
@@ -103,7 +103,7 @@ class Env:
         vel = np.array([quad_vel.x_val, quad_vel.y_val, quad_vel.z_val], dtype=np.float64)
         speed = np.linalg.norm(vel)
         
-        cur_loc = observation[3: 6]
+        cur_loc = observation[1][:3]
         target = np.array([self.target_loc.x_val, self.target_loc.y_val, self.target_loc.z_val])
         current_distance = np.linalg.norm(target - cur_loc)
         
@@ -136,23 +136,22 @@ class Env:
         
         
     def _is_done(self, observation, reward):
-        cur_loc = observation[3: 6]
+        cur_loc = observation[1][:3]
         target = np.array([self.target_loc.x_val, self.target_loc.y_val, self.target_loc.z_val])
         distance = np.linalg.norm(target - cur_loc)
 
         if distance < 3:
             print('solved')
             return True
-
         if reward < -30:
             print('reward too low') 
             return True
         if self.step_count > 2000:
             print('timeout')   
             return True
-        if np.absolute(observation[5]) < 1:
+        if np.absolute(observation[1][2]) < 1:
             print('too low')
-
             return True
+          
         return False        
 
