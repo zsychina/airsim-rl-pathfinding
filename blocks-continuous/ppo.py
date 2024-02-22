@@ -2,6 +2,7 @@ from environment import Env
 from agent import PPO
 import torch
 
+torch.manual_seed(42)
 
 MAX_EPISODE = 10000
 UPDATE_TIMESTEP = 2000

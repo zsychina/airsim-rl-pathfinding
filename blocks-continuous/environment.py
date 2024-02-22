@@ -18,8 +18,9 @@ class Env:
     def reset(self):
         self.client.reset()
         self.step_count = 0
-        target_pos = [np.random.uniform(70, 80), np.random.uniform(50, 70), -10]
-        init_pos = [np.random.uniform(-95, -90), np.random.uniform(-20, 20), -10]
+        # target_pos = [np.random.uniform(40, 60), np.random.uniform(20, 90), -10]
+        target_pos = [np.random.uniform(-4, 20), np.random.uniform(-21, 16), -10]
+        init_pos = [np.random.uniform(-90, -80), np.random.uniform(-20, 20), -10]
         # print(f'target_pos {target_pos}\ninit_pos{init_pos}')
         self.target_loc = airsim.Vector3r(target_pos[0], target_pos[1], target_pos[2])
         self.client.simSetVehiclePose(airsim.Pose(airsim.Vector3r(init_pos[0], init_pos[1], init_pos[2])), False)
@@ -142,14 +143,15 @@ class Env:
         if distance < 3:
             print('solved')
             return True
-        if reward < -21:
+        if reward < -30:
             print('reward too low') 
             return True
         if self.step_count > 2000:
             print('timeout')   
             return True
         if np.absolute(observation[1][2]) < 1:
-            print('height too low')
+            print('too low')
             return True
+          
         return False        
 
