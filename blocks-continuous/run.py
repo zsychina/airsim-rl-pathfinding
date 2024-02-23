@@ -11,11 +11,11 @@ eps_clip = 0.2
 gamma = .99
 lr_actor =  3e-4
 lr_cirtic = 1e-3
-state_dim = 10
+# state_dim = 10
 action_dim = 4
 
 ppo_agent = PPO(
-    state_dim=state_dim, 
+    # state_dim=state_dim, 
     action_dim=action_dim, 
     lr_actor=lr_actor,
     lr_critic=lr_cirtic,
@@ -41,7 +41,6 @@ for episode_i in range(1, TEST_EPISODE + 1):
         if done:
             break
         
-    ppo_agent.buffer.clear()
     test_running_rewards += episode_reward
     print(f'Episode {episode_i}, Reward {episode_reward}')
 
