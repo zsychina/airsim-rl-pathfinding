@@ -147,14 +147,15 @@ class Env:
         if distance <= 5:
             print('solved')
             return True
-        if reward < -21:
+        if reward < -30:
             print('reward too low') 
             return True
         if self.step_count > 2000:
             print('timeout')   
             return True
         if np.absolute(observation[1][2]) < 1:
-            print('height too low')
+            print('too low')
             return True
+          
         return False        
 
