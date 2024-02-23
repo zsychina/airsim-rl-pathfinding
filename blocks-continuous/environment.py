@@ -14,13 +14,13 @@ yaw_dv = 5.0
 class Env:
     def __init__(self):
         self.client = airsim.MultirotorClient()
+        self.image_error_count = 0
     
     def reset(self):
         self.client.reset()
         self.step_count = 0
-        # target_pos = [np.random.uniform(40, 60), np.random.uniform(20, 90), -10]
-        target_pos = [np.random.uniform(-4, 20), np.random.uniform(-21, 16), -10]
-        init_pos = [np.random.uniform(-90, -80), np.random.uniform(-20, 20), -10]
+        target_pos = [np.random.uniform(34, 38), np.random.uniform(30, 47), -10]
+        init_pos = [np.random.uniform(-95, -90), np.random.uniform(-20, 20), -10]
         # print(f'target_pos {target_pos}\ninit_pos{init_pos}')
         self.target_loc = airsim.Vector3r(target_pos[0], target_pos[1], target_pos[2])
         self.client.simSetVehiclePose(airsim.Pose(airsim.Vector3r(init_pos[0], init_pos[1], init_pos[2])), False)
@@ -37,13 +37,17 @@ class Env:
         cur_loc = state.kinematics_estimated.position
         cur_loc = np.array([cur_loc.x_val, cur_loc.y_val, cur_loc.z_val])
         target = np.array([self.target_loc.x_val, self.target_loc.y_val, self.target_loc.z_val])
-
-        responses = self.client.simGetImages([airsim.ImageRequest("0", airsim.ImageType.Scene, False, False)])
-        response = responses[0]
-        img1d = np.fromstring(response.image_data_uint8, dtype=np.uint8) 
-        img_rgb = img1d.reshape(response.height, response.width, 3)
-        img_resize = cv2.resize(img_rgb, (64, 64))
-        img_resize = np.transpose(img_resize, (2, 0, 1))
+        try:
+            responses = self.client.simGetImages([airsim.ImageRequest("0", airsim.ImageType.Scene, False, False)])
+            response = responses[0]
+            img1d = np.fromstring(response.image_data_uint8, dtype=np.uint8) 
+            img_rgb = img1d.reshape(response.height, response.width, 3)
+            img_resize = cv2.resize(img_rgb, (64, 64))
+            img_resize = np.transpose(img_resize, (2, 0, 1))
+        except:
+            img_resize = np.random.randint(0, 255, (3, 64, 64), dtype=np.uint8)
+            self.image_error_count += 1
+            print(f'image error {self.image_error_count}')
         observation = [img_resize, np.concatenate([cur_loc, target])]
         return observation
         
@@ -128,8 +132,8 @@ class Env:
         if speed < speed_limit:
             reward += config.reward['slow']
         
-        if current_distance <= 5:
-            reward += config.reward['goal']
+        if current_distance <= 10:
+            reward += config.reward['goal'] / current_distance
             
         self.last_distance = current_distance
         return reward
@@ -140,7 +144,7 @@ class Env:
         target = np.array([self.target_loc.x_val, self.target_loc.y_val, self.target_loc.z_val])
         distance = np.linalg.norm(target - cur_loc)
 
-        if distance < 3:
+        if distance <= 5:
             print('solved')
             return True
         if reward < -30:
