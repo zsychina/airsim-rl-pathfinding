@@ -41,7 +41,7 @@ class ActorCritic(nn.Module):
     
     def act(self, image, location):
         action_probs = self.actor(image, location)
-        dist = Categorical(action_probs)
+        dist = Categorical(logits=action_probs)
         
         action = dist.sample()
         action_logprob = dist.log_prob(action)
