@@ -51,7 +51,7 @@ class ActorCritic(nn.Module):
     
     def evaluate(self, img, loc, action):
         action_probs = self.actor(img, loc)
-        dist = Categorical(action_probs)
+        dist = Categorical(logits=action_probs)
             
         action_logprobs = dist.log_prob(action)
         dist_entropy = dist.entropy()
