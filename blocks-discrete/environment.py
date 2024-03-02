@@ -2,28 +2,26 @@ import airsim
 import numpy as np
 import time
 import config
+import cv2
 
 clockspeed = 10
 timeslice = 1 / clockspeed
-floorZ = 2
 speed_limit = 0.2
 
-d_v = d_vx = d_vy = d_vz = 2.0
-
-target_pos = [30, -35, -6]
-init_pos = [-65, 0, -10]
+d_v = d_vx = d_vy = d_vz = 5.0
+yaw_dv = 2.5
 
 class Env:
     def __init__(self):
         self.client = airsim.MultirotorClient()
-        # should be random
-        self.target_loc = airsim.Vector3r(target_pos[0], target_pos[1], target_pos[2])
-        self.step_count = 0
+        self.image_error_count = 0
     
     def reset(self):
         self.client.reset()
         self.step_count = 0
-        # should be random
+        target_pos = [np.random.uniform(34, 38), np.random.uniform(30, 47), -10]
+        init_pos = [np.random.uniform(-95, -90), np.random.uniform(-20, 20), -10]
+        # print(f'target_pos {target_pos}\ninit_pos{init_pos}')
         self.target_loc = airsim.Vector3r(target_pos[0], target_pos[1], target_pos[2])
         self.client.simSetVehiclePose(airsim.Pose(airsim.Vector3r(init_pos[0], init_pos[1], init_pos[2])), False)
         self.client.enableApiControl(True)
@@ -35,36 +33,45 @@ class Env:
         
         
     def _cal_observation(self):
-        # [DX, DY, DZ, X, Y, Z, Front, Left, Right, Distance]
         state = self.client.getMultirotorState()
         cur_loc = state.kinematics_estimated.position
         cur_loc = np.array([cur_loc.x_val, cur_loc.y_val, cur_loc.z_val])
         target = np.array([self.target_loc.x_val, self.target_loc.y_val, self.target_loc.z_val])
-        distance_vec = target - cur_loc
-        distance = np.linalg.norm(distance_vec)
-        distance_sensor_front = self.client.getDistanceSensorData(distance_sensor_name='Front')
-        distance_sensor_left = self.client.getDistanceSensorData(distance_sensor_name='Left')
-        distance_sensor_right = self.client.getDistanceSensorData(distance_sensor_name='Right')
-        distance_sensors = np.array([distance_sensor_front.distance, distance_sensor_left.distance, distance_sensor_right.distance])
-        
-        observation = np.concatenate((distance_vec, cur_loc, distance_sensors, np.array([distance])))
+        try:
+            responses = self.client.simGetImages([airsim.ImageRequest("0", airsim.ImageType.Scene, False, False)])
+            response = responses[0]
+            img1d = np.fromstring(response.image_data_uint8, dtype=np.uint8) 
+            img_rgb = img1d.reshape(response.height, response.width, 3)
+            img_resize = cv2.resize(img_rgb, (64, 64))
+            img_resize = np.transpose(img_resize, (2, 0, 1))
+        except:
+            img_resize = np.random.randint(0, 255, (3, 64, 64), dtype=np.uint8)
+            self.image_error_count += 1
+            print(f'image error {self.image_error_count}')
+        observation = [img_resize, np.concatenate([cur_loc, target])]
         return observation
         
     
     def step(self, action):
+        # action \in [0, 7]
+        # [+vx, -vx, +vy, -vy, +vz, -vz, +vyaw, -vyaw]
         self.step_count += 1
-        # action := int \in [0, 5]
-        # [+X, -X, +Y, -Y, +Z, -Z]
-        velocity = [0, 0, 0]
         
-        if action in [0, 2, 4]: # add velocity
-            velocity[action // 2] = d_v
-        else: # minus velocity
-            velocity[action // 2] = -d_v
+        vx = vy = vz = vyaw = 0
+        axis = action // 2
+        direction = 1 if action % 2 == 0 else -1
+        if axis == 0:
+            vx = direction * d_vx
+        elif axis == 1:
+            vy = direction * d_vy
+        elif axis == 2:
+            vz = direction * d_vz
+        elif axis == 3:
+            vyaw = direction * yaw_dv
         
         self.client.simPause(False)
-        self.client.moveByVelocityBodyFrameAsync(vx=velocity[0], vy=velocity[1], vz=velocity[2], 
-                                                 duration=timeslice, yaw_mode=airsim.YawMode(True))
+        self.client.moveByVelocityBodyFrameAsync(vx=vx, vy=vy, vz=vz, 
+                                                 duration=timeslice, yaw_mode=airsim.YawMode(is_rate=True, yaw_or_rate=vyaw))
         landed = False
         has_collided = False
         collision_count = 0
@@ -87,14 +94,11 @@ class Env:
             collided = collided or close_to_wall
             
             landed = (quad_vel.x_val == 0 and quad_vel.y_val == 0 and quad_vel.z_val == 0)
-            landed = landed or quad_pos.z_val > floorZ 
+            landed = landed or np.absolute(quad_pos.z_val) < 2 
             collision = collided or landed
             if collision:
-                collision_count += 1
+                has_collided = True                
                 print(f'collision_count {collision_count}')
-            if collision_count > 10:
-                has_collided = True
-                print('collided!')
                 break
          
         self.client.simPause(True)
@@ -112,7 +116,7 @@ class Env:
         vel = np.array([quad_vel.x_val, quad_vel.y_val, quad_vel.z_val], dtype=np.float64)
         speed = np.linalg.norm(vel)
         
-        cur_loc = observation[3: 6]
+        cur_loc = observation[1][:3]
         target = np.array([self.target_loc.x_val, self.target_loc.y_val, self.target_loc.z_val])
         current_distance = np.linalg.norm(target - cur_loc)
         
@@ -132,24 +136,35 @@ class Env:
         if current_distance < self.last_distance:
             reward += config.reward['forward'] * (self.last_distance - current_distance)
         else:
-            reward += config.reward['backward']
+            reward += config.reward['backward'] * (current_distance - self.last_distance)
         
         if speed < speed_limit:
             reward += config.reward['slow']
         
-        if current_distance <= 5:
-            reward += config.reward['goal']
+        if current_distance <= 10:
+            reward += config.reward['goal'] / current_distance
             
         self.last_distance = current_distance
         return reward
         
         
     def _is_done(self, observation, reward):
-        cur_loc = observation[3: 6]
+        cur_loc = observation[1][:3]
         target = np.array([self.target_loc.x_val, self.target_loc.y_val, self.target_loc.z_val])
         distance = np.linalg.norm(target - cur_loc)
-        if distance < 3 or reward < -5 or self.step_count > 2000 or np.absolute(observation[5]) < 2:
+
+        if distance <= 5:
+            print('solved')
             return True
-        
+        if reward < -30:
+            print('reward too low') 
+            return True
+        if self.step_count > 2000:
+            print('timeout')   
+            return True
+        if np.absolute(observation[1][2]) < 1:
+            print('too low')
+            return True
+          
         return False        
 
