@@ -18,7 +18,7 @@ eps_clip = 0.2
 gamma = .99
 lr_actor =  3e-4
 lr_cirtic = 1e-3
-action_dim = 4
+action_dim = 8
 
 ppo_agent = PPO(
     action_dim=action_dim, 

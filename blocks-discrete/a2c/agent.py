@@ -7,7 +7,7 @@ from model import Actor, Critic
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-action_dim = 4
+action_dim = 8
 
 class A2C(nn.Module):
     
