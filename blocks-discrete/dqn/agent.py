@@ -11,11 +11,12 @@ Q_NETWORK_ITERATION = 100
 
 action_dim = 8
 
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 class DQN:
     def __init__(self):
-        self.eval_net = Net(action_dim)
-        self.target_net = Net(action_dim)
+        self.eval_net = Net(action_dim).to(device)
+        self.target_net = Net(action_dim).to(device)
 
         self.learn_step_counter = 0
         self.memory_counter = 0
@@ -30,14 +31,14 @@ class DQN:
         self.loss_fn = torch.nn.MSELoss()
 
     def select_action(self, state):
-        image = torch.from_numpy(state[0]).float()
-        location = torch.from_numpy(state[1]).float()
+        image = torch.from_numpy(state[0]).float().to(device)
+        location = torch.from_numpy(state[1]).float().to(device)
         if np.random.randn() <= EPISILO:
             action_values = self.eval_net(image, location)
             action = action_values.argmax()
         else:
             action = np.random.randint(0, action_dim)
-        return action
+        return action.cpu()
 
     def store_transition(self, image, location, action, reward, next_image, next_location):
         index = self.memory_counter % MEMORY_CAPACITY
@@ -56,12 +57,12 @@ class DQN:
         self.learn_step_counter += 1
         
         sample_index = np.random.choice(MEMORY_CAPACITY, BATCH_SIZE)
-        image_batch = torch.FloatTensor(self.image_buffer[sample_index])
-        location_batch = torch.FloatTensor(self.location_buffer[sample_index])
-        action_batch = torch.LongTensor(self.action_buffer[sample_index])
-        reward_batch = torch.FloatTensor(self.reward_buffer[sample_index])
-        next_image_batch = torch.FloatTensor(self.next_image_buffer[sample_index])
-        next_location_batch = torch.FloatTensor(self.next_location_buffer[sample_index])
+        image_batch = torch.FloatTensor(self.image_buffer[sample_index]).to(device)
+        location_batch = torch.FloatTensor(self.location_buffer[sample_index]).to(device)
+        action_batch = torch.LongTensor(self.action_buffer[sample_index]).to(device)
+        reward_batch = torch.FloatTensor(self.reward_buffer[sample_index]).to(device)
+        next_image_batch = torch.FloatTensor(self.next_image_buffer[sample_index]).to(device)
+        next_location_batch = torch.FloatTensor(self.next_location_buffer[sample_index]).to(device)
         
         q_eval = self.eval_net(image_batch, location_batch).gather(1, action_batch)
         q_next = self.target_net(next_image_batch, next_location_batch).detach()
