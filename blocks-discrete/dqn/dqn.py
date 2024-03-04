@@ -10,6 +10,7 @@ dqn = DQN()
 env = Env()
 
 for episode_i in range(max_episode):
+    print(f'episode {episode_i}')
     state = env.reset()
     ep_reward = 0
     while True:
