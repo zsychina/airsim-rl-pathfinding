@@ -43,7 +43,7 @@ class A2C(nn.Module):
             critic_vals.append(pred)
             
             state, reward, done = self.env.step(action.item())
-            rewards.append(torch.tensor(reward).double())
+            rewards.append(torch.tensor(reward).double().to(device))
             
         total_reward = sum(rewards)
         
