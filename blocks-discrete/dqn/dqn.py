@@ -10,6 +10,7 @@ dqn = DQN()
 env = Env()
 
 for episode_i in range(max_episode):
+    print(f'episode {episode_i}')
     state = env.reset()
     ep_reward = 0
     while True:
@@ -22,6 +23,7 @@ for episode_i in range(max_episode):
         if dqn.memory_counter >= MEMORY_CAPACITY:
             dqn.learn()
             if done:
+                dqn.save()
                 print(f'episode {episode_i}, reward {ep_reward}')
 
         if done:

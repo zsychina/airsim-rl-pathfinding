@@ -43,7 +43,7 @@ class A2C(nn.Module):
             critic_vals.append(pred)
             
             state, reward, done = self.env.step(action.item())
-            rewards.append(torch.tensor(reward).double())
+            rewards.append(torch.tensor(reward).double().to(device))
             
         total_reward = sum(rewards)
         
@@ -60,6 +60,23 @@ class A2C(nn.Module):
         rewards = (rewards - torch.mean(rewards)) / (torch.std(rewards + 1e-6))
         
         return rewards, f(critic_vals), f(action_lp_vals), total_reward
+    
+    def test_env_episode(self):
+        state = self.env.reset()
+        done = False
+        ep_reward = 0
+        while not done:
+            image = torch.from_numpy(state[0]).float().to(device)
+            location = torch.from_numpy(state[1]).float().to(device)
+            action_logits = self.actor(image, location)
+            action = Categorical(logits=action_logits).sample()
+            state, reward, done = self.env.step(action.item())
+            ep_reward += reward
+        return ep_reward
+
+    def load(self):
+        self.actor.load_state_dict(torch.load('checkpoint/actor.pth'))
+        self.critic.load_state_dict(torch.load('checkpoint/critic.pth'))        
 
     @staticmethod
     def compute_loss(action_p_vals, G, V, crititc_loss=nn.SmoothL1Loss()):

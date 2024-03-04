@@ -3,7 +3,7 @@ reward = {
     'backward': -10,
     'normal': -0.1,
     'slow': -0.05,
-    'dead': -20.0,
-    'goal': 1000.0,
+    'dead': -200.0,
+    'goal': 100.0,
     'close': -0.05,
 }

@@ -1,6 +1,5 @@
-**/test.*
+# **/test.*
 test/
 **/__pycache__/
-# blocks1.0/
 **/tempCodeRunnerFile.py
 **/*.pth
