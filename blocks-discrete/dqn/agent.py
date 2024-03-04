@@ -39,6 +39,13 @@ class DQN:
         else:
             action = torch.tensor(np.random.randint(0, action_dim))
         return action.cpu()
+    
+    def select_action_test(self, state):
+        image = torch.from_numpy(state[0]).float().to(device)
+        location = torch.from_numpy(state[1]).float().to(device)
+        action_values = self.eval_net(image, location)
+        action = action_values.argmax()
+        return action.cpu()        
 
     def store_transition(self, image, location, action, reward, next_image, next_location):
         index = self.memory_counter % MEMORY_CAPACITY
@@ -73,6 +80,7 @@ class DQN:
         loss.backward()
         self.optimizer.step()
         
+    def save(self):
         torch.save(self.eval_net.state_dict(), 'checkpoint/eval.pth')
         torch.save(self.target_net.state_dict(), 'checkpoint/target.pth')
         
