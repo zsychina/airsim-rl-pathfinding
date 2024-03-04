@@ -20,11 +20,11 @@ class DQN:
         self.learn_step_counter = 0
         self.memory_counter = 0
         self.image_buffer = np.zeros((MEMORY_CAPACITY, 3, 64, 64))
-        self.location_buffer = np.zeros((MEMORY_CAPACITY, 12))
+        self.location_buffer = np.zeros((MEMORY_CAPACITY, 6))
         self.action_buffer = np.zeros((MEMORY_CAPACITY, 1))
         self.reward_buffer = np.zeros((MEMORY_CAPACITY, 1))
         self.next_image_buffer = np.zeros((MEMORY_CAPACITY, 3, 64, 64))
-        self.next_location_buffer = np.zeros((MEMORY_CAPACITY, 12))
+        self.next_location_buffer = np.zeros((MEMORY_CAPACITY, 6))
 
         self.optimizer = torch.optim.Adam(self.eval_net.parameters(), lr=LR)
         self.loss_fn = torch.nn.MSELoss()
