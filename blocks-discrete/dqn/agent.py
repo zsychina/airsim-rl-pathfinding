@@ -37,7 +37,7 @@ class DQN:
             action_values = self.eval_net(image, location)
             action = action_values.argmax()
         else:
-            action = np.random.randint(0, action_dim)
+            action = torch.tensor(np.random.randint(0, action_dim))
         return action.cpu()
 
     def store_transition(self, image, location, action, reward, next_image, next_location):
