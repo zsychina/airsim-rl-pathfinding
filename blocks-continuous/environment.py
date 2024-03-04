@@ -123,6 +123,7 @@ class Env:
         
         if dead:
             reward += config.reward['dead']
+            return reward
         
         if current_distance < self.last_distance:
             reward += config.reward['forward'] * (self.last_distance - current_distance)
