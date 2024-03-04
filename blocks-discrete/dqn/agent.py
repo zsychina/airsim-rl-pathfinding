@@ -71,4 +71,11 @@ class DQN:
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
+        
+        torch.save(self.eval_net.state_dict(), 'checkpoint/eval.pth')
+        torch.save(self.target_net.state_dict(), 'checkpoint/target.pth')
+        
+    def load(self):
+        self.eval_net.load_state_dict(torch.load('checkpoint/eval.pth'))
+        self.target_net.load_state_dict(torch.load('checkpoint/target.pth'))
             
