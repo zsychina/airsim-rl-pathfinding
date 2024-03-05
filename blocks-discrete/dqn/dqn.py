@@ -2,7 +2,9 @@ import sys
 sys.path.append('..')
 from environment import Env
 from agent import DQN, MEMORY_CAPACITY
+import logging
 
+logging.basicConfig(filename='log.txt', level=logging.INFO, format='%(message)s')
 
 max_episode = 1000
 
@@ -24,9 +26,10 @@ for episode_i in range(max_episode):
             dqn.learn()
             if done:
                 dqn.save()
-                print(f'episode {episode_i}, reward {ep_reward}')
 
         if done:
+            print(f'episode {episode_i}, reward {ep_reward}')
+            logging.info(f'{episode_i}: {ep_reward}')
             break
         
         state = next_state        

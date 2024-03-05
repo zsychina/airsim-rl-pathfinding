@@ -3,13 +3,14 @@ sys.path.append('..')
 from environment import Env
 from agent import PPO
 import torch
+import logging
 
+logging.basicConfig(filename='log.txt', level=logging.INFO, format='%(message)s')
 torch.manual_seed(42)
 
 MAX_EPISODE = 10000
 UPDATE_TIMESTEP = 2000
 MODEL_SAVE_TIMESTEP = 5000
-PRINT_TIMESTEP = 500
 
 env = Env()
 
@@ -31,11 +32,9 @@ ppo_agent = PPO(
 
 
 time_step = 0
-running_reward = 0
-running_episode = 1
 for episode_i in range(MAX_EPISODE):
     state = env.reset()
-    current_episode_reward = 0
+    ep_reward = 0
     
     done = False
     while not done:
@@ -46,11 +45,7 @@ for episode_i in range(MAX_EPISODE):
         ppo_agent.buffer.is_terminals.append(done)
         
         time_step += 1
-        current_episode_reward += reward
-        
-        if time_step % PRINT_TIMESTEP == 0:
-            avg_reward = running_reward / running_episode
-            print(f'Episode {episode_i}, average reward: {avg_reward}')
+        ep_reward += reward
         
         if time_step % UPDATE_TIMESTEP == 0:
             ppo_agent.update()
@@ -58,8 +53,7 @@ for episode_i in range(MAX_EPISODE):
         if time_step % MODEL_SAVE_TIMESTEP == 0:
             ppo_agent.save()
             
-    running_reward += current_episode_reward
-    running_episode += 1
-    
+    print(f'episdoe {episode_i} reward {ep_reward}')  
+    logging.info(f'{episode_i}: {ep_reward}')  
 
 

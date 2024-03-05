@@ -5,6 +5,9 @@ import math
 import sys
 sys.path.append('..')
 from environment import Env
+import logging
+
+logging.basicConfig(filename='log.txt', level=logging.INFO, format='%(message)s')
 
 LR = 1e-3
 MAX_EPISODE = 10000
@@ -22,8 +25,7 @@ r = []
 avg_r = []
 max_r = -math.inf
 
-for i in range(MAX_EPISODE):
-    print(f'episode {i}')
+for episode_i in range(MAX_EPISODE):
     actor_optim.zero_grad()
     critic_optim.zero_grad()
     
@@ -31,8 +33,10 @@ for i in range(MAX_EPISODE):
     
     r.append(rewards)
     
-    avg_reward = total_reward / len(rewards)
-    print(f'Average reward for episode {i} is {avg_reward}')
+    # avg_reward = total_reward / len(rewards)
+    # print(f'Average reward for episode {i} is {avg_reward}')
+    print(f'episode {episode_i} reward {total_reward}')
+    logging.info(f'{episode_i}: {total_reward}')
     
     l_actor, l_critic = agent.compute_loss(action_p_vals=action_lp_vals, G=rewards, V=critic_vals)
     
