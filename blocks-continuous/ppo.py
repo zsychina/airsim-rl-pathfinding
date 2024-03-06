@@ -1,7 +1,9 @@
 from environment import Env
 from agent import PPO
 import torch
+import logging
 
+logging.basicConfig(filename='log.txt', level=logging.INFO, format='%(message)s')
 torch.manual_seed(42)
 
 MAX_EPISODE = 10000
@@ -60,5 +62,7 @@ for episode_i in range(MAX_EPISODE):
     running_reward += current_episode_reward
     running_episode += 1
     
+    print(f'episdoe {episode_i} reward {current_episode_reward}')  
+    logging.info(f'{episode_i}: {current_episode_reward}')  
 
 
