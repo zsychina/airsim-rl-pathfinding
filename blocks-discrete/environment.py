@@ -146,6 +146,9 @@ class Env:
         if current_distance <= 10:
             reward += config.reward['goal'] / current_distance
             
+        if current_distance <= 5.1:
+            reward += 1000            
+            
         self.last_distance = current_distance
         return reward
         
