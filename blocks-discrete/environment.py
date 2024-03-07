@@ -19,6 +19,7 @@ class Env:
     def reset(self):
         self.client.reset()
         self.step_count = 0
+        self.ep_reward = 0
         target_pos = [np.random.uniform(34, 38), np.random.uniform(30, 47), -10]
         init_pos = [np.random.uniform(-95, -90), np.random.uniform(-20, 20), -10]
         # print(f'target_pos {target_pos}\ninit_pos{init_pos}')
@@ -107,7 +108,7 @@ class Env:
         observation = self._cal_observation()
         reward = self._cal_reward(observation, dead)
         done = self._is_done(observation, reward) or dead
-        
+        self.ep_reward += reward
         return observation, reward, done
 
     
@@ -157,7 +158,7 @@ class Env:
         if distance <= 5:
             print('solved')
             return True
-        if reward < -30:
+        if reward < -30 or self.ep_reward <= -300:
             print('reward too low') 
             return True
         if self.step_count > 2000:
